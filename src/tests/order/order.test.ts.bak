@@ -1,0 +1,346 @@
+import { expect } from 'chai';
+import { ApiClient } from '../../utils/api-client';
+import { CustomerDataGenerator } from '../../data-generators/customer';
+import { ProductDataGenerator } from '../../data-generators/product';
+import { getBaseUrl, getAdminUrl } from '../../config';
+import { getAdminToken, delay } from '../../utils/test-helpers';
+import {
+  Customer,
+  CustomerRegistration,
+  Product,
+  Cart,
+  CartItem,
+  CartItemResponse,
+  ShippingMethod,
+  PaymentMethod,
+  Order,
+  Address,
+  ShippingInformationResponse,
+} from '../../types';
+
+describe('Order Placement Flow', function () {
+  this.timeout(30000);
+
+  let customerApiClient: ApiClient;
+  let adminApiClient: ApiClient;
+  let customerData: CustomerRegistration;
+  let customer: Customer;
+  let customerToken: string;
+  let adminToken: string;
+  let testProduct: Product;
+  let cartId: string;
+  let orderId: string;
+
+  before(async function () {
+    // Initialize API clients
+    customerApiClient = new ApiClient();
+    adminApiClient = new ApiClient();
+
+    // Get admin token and set it
+    adminToken = await getAdminToken();
+    adminApiClient.setAuthToken(adminToken);
+
+    // Create test product
+    const productData = ProductDataGenerator.generateSimpleProduct({
+      price: 25.99,
+      extension_attributes: {
+        stock_item: {
+          qty: 100,
+          is_in_stock: true,
+          manage_stock: true,
+        },
+      },
+    });
+
+    testProduct = await adminApiClient.post<Product>(getAdminUrl('/products'), {
+      product: productData,
+    });
+
+    // Wait a moment for product to be indexed
+    await delay(2000);
+
+    // Create test customer
+    customerData = CustomerDataGenerator.generateCustomerWithAddress();
+    customer = await customerApiClient.post<Customer>(getBaseUrl('/customers'), customerData);
+
+    // Login customer
+    customerToken = await customerApiClient.post<string>(
+      getBaseUrl('/integration/customer/token'),
+      {
+        username: customerData.customer.email,
+        password: customerData.password,
+      },
+    );
+    customerApiClient.setAuthToken(customerToken);
+  });
+
+  describe('Shopping Cart Management', function () {
+    it('should create a new cart for customer', async function () {
+      cartId = await customerApiClient.post<string>(getBaseUrl('/carts/mine'));
+      expect(cartId).to.be.a('string');
+      expect(parseInt(cartId)).to.be.a('number');
+    });
+
+    it('should add product to cart', async function () {
+      const cartItem: CartItem = {
+        sku: testProduct.sku,
+        qty: 2,
+        quote_id: cartId,
+      };
+
+      const response = await customerApiClient.post<CartItemResponse>(
+        getBaseUrl('/carts/mine/items'),
+        { cartItem },
+      );
+
+      expect(response).to.be.an('object');
+      expect(response.sku).to.equal(testProduct.sku);
+      expect(response.qty).to.equal(2);
+      expect(response.price).to.equal(testProduct.price);
+    });
+
+    it('should get cart totals', async function () {
+      const response = await customerApiClient.get<Cart>(getBaseUrl('/carts/mine'));
+
+      expect(response).to.be.an('object');
+      expect(response.id).to.equal(parseInt(cartId));
+      expect(response.items).to.have.lengthOf(1);
+      expect(response.items_qty).to.equal(2);
+    });
+
+    it('should update cart item quantity', async function () {
+      const cartItems = await customerApiClient.get<CartItemResponse[]>(
+        getBaseUrl('/carts/mine/items'),
+      );
+      const itemId = cartItems[0]!.item_id;
+
+      const updatedItem = {
+        cartItem: {
+          item_id: itemId,
+          qty: 3,
+          quote_id: cartId,
+        },
+      };
+
+      const response = await customerApiClient.put<CartItemResponse>(
+        getBaseUrl(`/carts/mine/items/${itemId}`),
+        updatedItem,
+      );
+
+      expect(response.qty).to.equal(3);
+    });
+  });
+
+  describe('Checkout Process', function () {
+    let shippingMethods: ShippingMethod[];
+    let paymentMethods: PaymentMethod[];
+
+    it('should set billing address', async function () {
+      const billingAddress: Address = {
+        ...customerData.customer.addresses![0]!,
+        email: customer.email,
+      };
+
+      const response = await customerApiClient.post<number>(
+        getBaseUrl('/carts/mine/billing-address'),
+        { address: billingAddress },
+      );
+
+      expect(response).to.equal(parseInt(cartId));
+    });
+
+    it('should estimate shipping methods', async function () {
+      const shippingAddress = {
+        address: {
+          ...customerData.customer.addresses![0],
+          email: customer.email,
+        },
+      };
+
+      shippingMethods = await customerApiClient.post<ShippingMethod[]>(
+        getBaseUrl('/carts/mine/estimate-shipping-methods'),
+        shippingAddress,
+      );
+
+      expect(shippingMethods).to.be.an('array');
+      expect(shippingMethods.length).to.be.greaterThan(0);
+      expect(shippingMethods[0]).to.have.property('carrier_code');
+      expect(shippingMethods[0]).to.have.property('method_code');
+    });
+
+    it('should set shipping information', async function () {
+      const shippingInfo = {
+        addressInformation: {
+          billing_address: {
+            ...customerData.customer.addresses![0]!,
+            email: customer.email,
+          },
+          shipping_address: {
+            ...customerData.customer.addresses![0]!,
+            email: customer.email,
+          },
+          shipping_carrier_code: shippingMethods[0]!.carrier_code,
+          shipping_method_code: shippingMethods[0]!.method_code,
+        },
+      };
+
+      const response = await customerApiClient.post<ShippingInformationResponse>(
+        getBaseUrl('/carts/mine/shipping-information'),
+        shippingInfo,
+      );
+
+      expect(response).to.be.an('object');
+      expect(response.payment_methods).to.be.an('array');
+      paymentMethods = response.payment_methods;
+    });
+
+    it('should get available payment methods', async function () {
+      const methods = await customerApiClient.get<PaymentMethod[]>(
+        getBaseUrl('/carts/mine/payment-methods'),
+      );
+
+      expect(methods).to.be.an('array');
+      expect(methods.length).to.be.greaterThan(0);
+      expect(methods[0]).to.have.property('code');
+      expect(methods[0]).to.have.property('title');
+    });
+
+    it('should place order', async function () {
+      const orderData = {
+        paymentMethod: {
+          method: paymentMethods[0]?.code || 'checkmo', // Check/Money order
+        },
+      };
+
+      orderId = await customerApiClient.put<string>(
+        getBaseUrl('/carts/mine/payment-information'),
+        orderData,
+      );
+
+      expect(orderId).to.be.a('string');
+      expect(parseInt(orderId)).to.be.a('number');
+    });
+  });
+
+  describe('Order Verification', function () {
+    it('should retrieve order details using admin token', async function () {
+      // Wait for order to be processed
+      await delay(2000);
+
+      const response = await adminApiClient.get<Order>(getAdminUrl(`/orders/${orderId}`));
+
+      expect(response).to.be.an('object');
+      expect(response.entity_id).to.equal(parseInt(orderId));
+      expect(response.customer_email).to.equal(customer.email);
+      expect(response.customer_firstname).to.equal(customer.firstname);
+      expect(response.customer_lastname).to.equal(customer.lastname);
+      expect(response.items).to.have.lengthOf.at.least(1);
+      expect(response.state).to.be.oneOf(['new', 'processing']);
+      expect(response.grand_total).to.be.greaterThan(0);
+    });
+
+    it('should verify order items', async function () {
+      const order = await adminApiClient.get<Order>(getAdminUrl(`/orders/${orderId}`));
+
+      const orderItem = order.items.find((item) => item.sku === testProduct.sku);
+      expect(orderItem).to.exist;
+      expect(orderItem!.qty_ordered).to.equal(3);
+      expect(orderItem!.price).to.equal(testProduct.price);
+    });
+  });
+
+  describe('Guest Checkout', function () {
+    let guestCartId: string;
+    let guestEmail: string;
+
+    it('should create guest cart', async function () {
+      const guestApiClient = new ApiClient();
+      guestCartId = await guestApiClient.post<string>(getBaseUrl('/guest-carts'));
+      expect(guestCartId).to.be.a('string');
+    });
+
+    it('should add product to guest cart', async function () {
+      const guestApiClient = new ApiClient();
+      const cartItem: CartItem = {
+        sku: testProduct.sku,
+        qty: 1,
+        quote_id: guestCartId,
+      };
+
+      const response = await guestApiClient.post<CartItemResponse>(
+        getBaseUrl(`/guest-carts/${guestCartId}/items`),
+        { cartItem },
+      );
+
+      expect(response.sku).to.equal(testProduct.sku);
+    });
+
+    it('should complete guest checkout', async function () {
+      const guestApiClient = new ApiClient();
+      guestEmail = CustomerDataGenerator.generateCustomerRegistration().customer.email;
+      const guestAddress = CustomerDataGenerator.generateAddress();
+
+      // Set billing address
+      await guestApiClient.post(getBaseUrl(`/guest-carts/${guestCartId}/billing-address`), {
+        address: {
+          ...guestAddress,
+          email: guestEmail,
+        },
+      });
+
+      // Get shipping methods
+      const shippingMethods = await guestApiClient.post<ShippingMethod[]>(
+        getBaseUrl(`/guest-carts/${guestCartId}/estimate-shipping-methods`),
+        {
+          address: {
+            ...guestAddress,
+            email: guestEmail,
+          },
+        },
+      );
+
+      // Set shipping information
+      await guestApiClient.post(getBaseUrl(`/guest-carts/${guestCartId}/shipping-information`), {
+        addressInformation: {
+          billing_address: {
+            ...guestAddress,
+            email: guestEmail,
+          },
+          shipping_address: {
+            ...guestAddress,
+            email: guestEmail,
+          },
+          shipping_carrier_code: shippingMethods[0]!.carrier_code,
+          shipping_method_code: shippingMethods[0]!.method_code,
+        },
+      });
+
+      // Place order
+      const guestOrderId = await guestApiClient.put<string>(
+        getBaseUrl(`/guest-carts/${guestCartId}/payment-information`),
+        {
+          email: guestEmail,
+          paymentMethod: {
+            method: 'checkmo',
+          },
+        },
+      );
+
+      expect(guestOrderId).to.be.a('string');
+    });
+  });
+
+  after(async function () {
+    // Clean up test product
+    if (testProduct && testProduct.sku) {
+      try {
+        await adminApiClient.delete(
+          getAdminUrl(`/products/${encodeURIComponent(testProduct.sku)}`),
+        );
+      } catch (error) {
+        // Test cleanup error is non-critical
+        void error;
+      }
+    }
+  });
+});

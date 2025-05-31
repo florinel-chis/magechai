@@ -1,19 +1,55 @@
 {
-  "dependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/mocha": "^9.0.0",
-    "chai": "^4.3.4",
-    "chai-http": "^4.3.0",
-    "eslint": "^8.4.1",
-    "faker": "^5.5.3",
-    "mocha": "^9.1.3",
-    "sinon": "^12.0.1",
-    "sinon-chai": "^3.7.0",
-    "supertest": "^6.1.6",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
-  },
+  "name": "magechai",
+  "version": "2.0.0",
+  "description": "REST API testing framework for Magento e-commerce platform",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register src/*.test.ts"
+    "test": "mocha",
+    "test:watch": "mocha --watch",
+    "test:single": "mocha",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist coverage .nyc_output"
+  },
+  "keywords": [
+    "magento",
+    "testing",
+    "api",
+    "rest",
+    "e-commerce"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.30",
+    "@types/sinon": "^17.0.3",
+    "@types/sinon-chai": "^3.2.12",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "chai": "^4.4.1",
+    "chai-http": "^4.4.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "mocha": "^10.3.0",
+    "nyc": "^15.1.0",
+    "prettier": "^3.2.5",
+    "sinon": "^17.0.1",
+    "sinon-chai": "^3.7.0",
+    "supertest": "^6.3.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "axios": "^1.6.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
