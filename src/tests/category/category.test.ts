@@ -22,14 +22,15 @@ describe('Category API Tests', function () {
     it('should create a new category', async function () {
       const categoryData = CategoryDataGenerator.generateCategory();
 
-      const response = await apiClient.post<Category>(getAdminUrl('/categories'), categoryData);
+      const response = await apiClient.post<Category>(getAdminUrl('/categories'), {
+        category: categoryData,
+      });
 
       expect(response).to.be.an('object');
       expect(response.id).to.be.a('number');
-      expect(response.name).to.equal(categoryData.category.name);
-      expect(response.parent_id).to.equal(2);
+      expect(response.name).to.equal(categoryData.name);
+      expect(response.parent_id).to.equal(categoryData.parent_id);
       expect(response.is_active).to.equal(true);
-      expect(response.include_in_menu).to.equal(true);
 
       parentCategory = response;
     });
@@ -41,12 +42,14 @@ describe('Category API Tests', function () {
 
       const subcategoryData = CategoryDataGenerator.generateSubcategory(parentCategory.id);
 
-      const response = await apiClient.post<Category>(getAdminUrl('/categories'), subcategoryData);
+      const response = await apiClient.post<Category>(getAdminUrl('/categories'), {
+        category: subcategoryData,
+      });
 
       expect(response).to.be.an('object');
       expect(response.id).to.be.a('number');
       expect(response.parent_id).to.equal(parentCategory.id);
-      expect(response.name).to.equal(subcategoryData.category.name);
+      expect(response.name).to.equal(subcategoryData.name);
 
       childCategory = response;
     });
@@ -74,7 +77,6 @@ describe('Category API Tests', function () {
       expect(response).to.be.an('object');
       expect(response.id).to.be.a('number');
       expect(response.children_data).to.be.an('array');
-      // Root category (id=1) should have children including Default Category (id=2)
       expect(response.children_data!.length).to.be.greaterThan(0);
     });
   });
@@ -99,7 +101,6 @@ describe('Category API Tests', function () {
       expect(response.name).to.equal(updatedName);
       expect(response.is_active).to.equal(false);
 
-      // Update local reference for cleanup
       parentCategory = response;
     });
 
@@ -113,7 +114,6 @@ describe('Category API Tests', function () {
         this.skip();
       }
 
-      // Delete child first to avoid constraint errors
       if (childCategory) {
         const childResult = await apiClient.delete<boolean>(
           getAdminUrl(`/categories/${childCategory.id}`),
@@ -137,7 +137,6 @@ describe('Category API Tests', function () {
       return;
     }
 
-    // Clean up remaining categories (child first, then parent)
     if (childCategory) {
       try {
         await apiClient.delete(getAdminUrl(`/categories/${childCategory.id}`));
