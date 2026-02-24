@@ -3,7 +3,7 @@ import { ApiClient } from '../../utils/api-client';
 import { ProductDataGenerator } from '../../data-generators/product';
 import { getAdminUrl, config } from '../../config';
 import { getAdminToken, delay } from '../../utils/test-helpers';
-import { Product } from '../../types';
+import { Product, SearchResult } from '../../types';
 
 describe('Product API Tests', function () {
   this.timeout(15000);
@@ -179,6 +179,47 @@ describe('Product API Tests', function () {
       } catch (error: any) {
         expect((error as any).response.status).to.equal(404);
       }
+    });
+
+    it('should search products with sorting and pagination', async function () {
+      const response = await apiClient.get<SearchResult<Product>>(getAdminUrl('/products'), {
+        params: {
+          searchCriteria: {
+            sortOrders: [
+              {
+                field: 'created_at',
+                direction: 'DESC',
+              },
+            ],
+            page_size: 5,
+            current_page: 1,
+          },
+        },
+      });
+
+      expect(response.items).to.be.an('array');
+      expect(response.items.length).to.be.at.most(5);
+      expect(response.total_count).to.be.a('number');
+    });
+  });
+
+  describe('Product Attributes', function () {
+    it('should list product attributes', async function () {
+      const response = await apiClient.get<SearchResult<{ attribute_code: string; frontend_label: string }>>(
+        getAdminUrl('/products/attributes'),
+        {
+          params: {
+            searchCriteria: {
+              page_size: 10,
+              current_page: 1,
+            },
+          },
+        },
+      );
+
+      expect(response.items).to.be.an('array');
+      expect(response.items.length).to.be.greaterThan(0);
+      expect(response.items[0]).to.have.property('attribute_code');
     });
   });
 

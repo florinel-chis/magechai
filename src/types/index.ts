@@ -765,3 +765,72 @@ export interface CustomerGroup {
     exclude_website_ids?: number[];
   };
 }
+
+// --- Category Create (API request shape) ---
+
+export interface CategoryCreate {
+  category: {
+    name: string;
+    parent_id: number;
+    is_active: boolean;
+    include_in_menu: boolean;
+    custom_attributes?: CustomAttribute[];
+  };
+}
+
+// --- Order Comment Types ---
+
+export interface OrderComment {
+  comment: string;
+  created_at: string;
+  entity_id: number;
+  entity_name: string;
+  is_customer_notified: number;
+  is_visible_on_front: number;
+  parent_id: number;
+  status: string;
+}
+
+// --- Store Configuration Types ---
+
+export interface StoreConfig {
+  id: number;
+  code: string;
+  website_id: number;
+  locale: string;
+  base_currency_code: string;
+  default_display_currency_code: string;
+  timezone: string;
+  weight_unit: string;
+  base_url: string;
+  base_link_url: string;
+  base_media_url: string;
+  secure_base_url: string;
+}
+
+export interface Country {
+  id: string;
+  two_letter_abbreviation: string;
+  three_letter_abbreviation: string;
+  full_name_locale: string;
+  full_name_english: string;
+  available_regions?: CountryRegion[];
+}
+
+export interface CountryRegion {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface CurrencyInfo {
+  base_currency_code: string;
+  base_currency_symbol: string;
+  default_display_currency_code: string;
+  default_display_currency_symbol: string;
+  available_currency_codes: string[];
+  exchange_rates: Array<{
+    currency_to: string;
+    rate: number;
+  }>;
+}

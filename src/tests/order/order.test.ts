@@ -332,7 +332,9 @@ describe('Order Placement Flow', function () {
       expect(response.customer_lastname).to.equal(customer.lastname);
       expect(response.items).to.have.lengthOf.at.least(1);
       expect(response.state).to.be.oneOf(['new', 'processing']);
+      expect(response.status).to.be.oneOf(['pending', 'processing']);
       expect(response.grand_total).to.be.greaterThan(0);
+      expect(response.grand_total).to.be.at.least(testProduct.price * 3);
     });
 
     it('should verify order items', async function () {

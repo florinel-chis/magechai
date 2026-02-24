@@ -57,6 +57,22 @@ describe('Customer API Tests', function () {
         expect((error as any).response.status).to.equal(400);
       }
     });
+
+    it('should reject weak passwords', async function () {
+      const weakPasswordData = CustomerDataGenerator.generateCustomerRegistration();
+      weakPasswordData.password = 'abc';
+
+      try {
+        await apiClient.post<Customer>(getBaseUrl('/customers'), weakPasswordData);
+        expect.fail('Expected password validation error');
+      } catch (error: any) {
+        expect(error.response.status).to.equal(400);
+        const message = error.response.data?.message || '';
+        expect(message.toLowerCase()).to.satisfy((msg: string) =>
+          msg.includes('password') || msg.includes('minimum') || msg.includes('characters'),
+        );
+      }
+    });
   });
 
   describe('Customer Authentication', function () {
