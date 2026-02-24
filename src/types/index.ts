@@ -298,3 +298,152 @@ export interface ApiErrorResponse {
     data: ApiError;
   };
 }
+
+// --- Generic Search Result ---
+
+export interface SearchResult<T> {
+  items: T[];
+  search_criteria: {
+    filter_groups: Array<{
+      filters: Array<{
+        field: string;
+        value: string;
+        condition_type: string;
+      }>;
+    }>;
+  };
+  total_count: number;
+}
+
+// --- Category Types ---
+
+export interface Category {
+  id: number;
+  parent_id: number;
+  name: string;
+  is_active: boolean;
+  position: number;
+  level: number;
+  children: string;
+  children_data?: Category[];
+  created_at: string;
+  updated_at: string;
+  path: string;
+  include_in_menu: boolean;
+  custom_attributes?: CustomAttribute[];
+}
+
+export interface CategoryCreate {
+  category: {
+    name: string;
+    parent_id: number;
+    is_active: boolean;
+    include_in_menu: boolean;
+    custom_attributes?: CustomAttribute[];
+  };
+}
+
+// --- Order Management Types ---
+
+export interface OrderComment {
+  comment: string;
+  created_at: string;
+  entity_id: number;
+  entity_name: string;
+  is_customer_notified: number;
+  is_visible_on_front: number;
+  parent_id: number;
+  status: string;
+}
+
+export interface Invoice {
+  entity_id: number;
+  order_id: number;
+  state: number;
+  grand_total: number;
+  base_grand_total: number;
+  created_at: string;
+  updated_at: string;
+  items: InvoiceItem[];
+}
+
+export interface InvoiceItem {
+  entity_id: number;
+  parent_id: number;
+  order_item_id: number;
+  sku: string;
+  name: string;
+  qty: number;
+  price: number;
+  row_total: number;
+}
+
+export interface Shipment {
+  entity_id: number;
+  order_id: number;
+  created_at: string;
+  updated_at: string;
+  items: ShipmentItem[];
+  tracks: ShipmentTrack[];
+}
+
+export interface ShipmentItem {
+  entity_id: number;
+  parent_id: number;
+  order_item_id: number;
+  sku: string;
+  name: string;
+  qty: number;
+}
+
+export interface ShipmentTrack {
+  entity_id: number;
+  parent_id: number;
+  carrier_code: string;
+  title: string;
+  track_number: string;
+}
+
+// --- Store Configuration Types ---
+
+export interface StoreConfig {
+  id: number;
+  code: string;
+  website_id: number;
+  locale: string;
+  base_currency_code: string;
+  default_display_currency_code: string;
+  timezone: string;
+  weight_unit: string;
+  base_url: string;
+  base_link_url: string;
+  base_media_url: string;
+  secure_base_url: string;
+}
+
+export interface Country {
+  id: string;
+  two_letter_abbreviation: string;
+  three_letter_abbreviation: string;
+  full_name_locale: string;
+  full_name_english: string;
+  available_regions?: CountryRegion[];
+}
+
+export interface CountryRegion {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface CurrencyInfo {
+  base_currency_code: string;
+  base_currency_symbol: string;
+  default_display_currency_code: string;
+  default_display_currency_symbol: string;
+  available_currency_codes: string[];
+  exchange_rates: Array<{
+    currency_to: string;
+    rate: number;
+  }>;
+}
