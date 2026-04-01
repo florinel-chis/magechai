@@ -1,7 +1,11 @@
 import { ApiClient } from './api-client';
 import { config, getAdminUrl } from '../config';
+import { Address } from '../types';
 
 export async function getAdminToken(): Promise<string> {
+  if (config.magento.integrationToken) {
+    return config.magento.integrationToken;
+  }
   const client = new ApiClient();
   const response = await client.post<string>(getAdminUrl('/integration/admin/token'), {
     username: config.magento.adminUsername,
@@ -24,7 +28,7 @@ export function generateRandomEmail(): string {
   return `test_${generateRandomString()}@example.com`;
 }
 
-export function simplifyAddressForCheckout(address: any): any {
+export function simplifyAddressForCheckout(address: Address): Partial<Address> {
   return {
     firstname: address.firstname,
     lastname: address.lastname,

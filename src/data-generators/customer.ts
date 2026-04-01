@@ -17,11 +17,11 @@ export class CustomerDataGenerator {
         addresses: [],
         ...overrides?.customer,
       },
-      password: faker.internet.password({ 
-        length: 12, 
+      password: faker.internet.password({
+        length: 12,
         memorable: false,
         pattern: /[A-Za-z]/,
-        prefix: 'Test@123' // Ensure it meets Magento requirements
+        prefix: 'Test@123', // Ensure it meets Magento requirements
       }),
       ...overrides,
     };
@@ -40,7 +40,7 @@ export class CustomerDataGenerator {
         region: faker.location.state(),
         region_id: faker.number.int({ min: 1, max: 50 }),
       },
-      telephone: faker.phone.number(),
+      telephone: faker.helpers.fromRegExp('[0-9]{3}-[0-9]{3}-[0-9]{4}'),
       default_shipping: true,
       default_billing: true,
       ...overrides,

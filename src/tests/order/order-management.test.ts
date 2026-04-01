@@ -117,12 +117,9 @@ describe('Order Management (Admin)', function () {
 
       const paymentMethod = shippingInfo.payment_methods[0]?.code || 'checkmo';
 
-      orderId = await customerApiClient.put<string>(
-        getBaseUrl('/carts/mine/payment-information'),
-        {
-          paymentMethod: { method: paymentMethod },
-        },
-      );
+      orderId = await customerApiClient.put<string>(getBaseUrl('/carts/mine/payment-information'), {
+        paymentMethod: { method: paymentMethod },
+      });
 
       await delay(2000);
       console.log(`Order placed: ${orderId}`);
@@ -212,17 +209,14 @@ describe('Order Management (Admin)', function () {
       }
 
       try {
-        invoiceId = await adminApiClient.post<number>(
-          getAdminUrl(`/order/${orderId}/invoice`),
-          {
-            capture: true,
-            notify: false,
-          },
-        );
+        invoiceId = await adminApiClient.post<number>(getAdminUrl(`/order/${orderId}/invoice`), {
+          capture: true,
+          notify: false,
+        });
 
         expect(invoiceId).to.be.a('number');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || '';
+        const errorMessage = (error.response?.data?.message || '') as string;
         if (errorMessage.includes('cannot be invoiced') || errorMessage.includes('no items')) {
           console.log('Order cannot be invoiced in current state');
           this.skip();
@@ -236,9 +230,7 @@ describe('Order Management (Admin)', function () {
         this.skip();
       }
 
-      const response = await adminApiClient.get<Invoice>(
-        getAdminUrl(`/invoices/${invoiceId}`),
-      );
+      const response = await adminApiClient.get<Invoice>(getAdminUrl(`/invoices/${invoiceId}`));
 
       expect(response).to.be.an('object');
       expect(response.entity_id).to.equal(invoiceId);
@@ -265,7 +257,7 @@ describe('Order Management (Admin)', function () {
 
         expect(shipmentId).to.be.a('number');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || '';
+        const errorMessage = (error.response?.data?.message || '') as string;
         if (
           errorMessage.includes('cannot be shipped') ||
           errorMessage.includes('no items') ||

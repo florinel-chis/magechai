@@ -35,8 +35,8 @@ describe('Customer API Tests', function () {
         await apiClient.post<Customer>(getBaseUrl('/customers'), customerData);
         expect.fail('Expected error for duplicate email');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(400);
-        expect((error as any).response.data.message).to.include('already exists');
+        expect(error.response.status).to.equal(400);
+        expect(error.response.data.message).to.include('already exists');
       }
     });
 
@@ -54,7 +54,7 @@ describe('Customer API Tests', function () {
         await apiClient.post<Customer>(getBaseUrl('/customers'), invalidData);
         expect.fail('Expected validation error');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(400);
+        expect(error.response.status).to.equal(400);
       }
     });
 
@@ -67,9 +67,10 @@ describe('Customer API Tests', function () {
         expect.fail('Expected password validation error');
       } catch (error: any) {
         expect(error.response.status).to.equal(400);
-        const message = error.response.data?.message || '';
-        expect(message.toLowerCase()).to.satisfy((msg: string) =>
-          msg.includes('password') || msg.includes('minimum') || msg.includes('characters'),
+        const message = (error.response.data?.message || '') as string;
+        expect(message.toLowerCase()).to.satisfy(
+          (msg: string) =>
+            msg.includes('password') || msg.includes('minimum') || msg.includes('characters'),
         );
       }
     });
@@ -96,7 +97,7 @@ describe('Customer API Tests', function () {
         });
         expect.fail('Expected authentication error');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(401);
+        expect(error.response.status).to.equal(401);
       }
     });
 
@@ -108,7 +109,7 @@ describe('Customer API Tests', function () {
         });
         expect.fail('Expected authentication error');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(401);
+        expect(error.response.status).to.equal(401);
       }
     });
   });
@@ -148,7 +149,7 @@ describe('Customer API Tests', function () {
         await apiClient.get<Customer>(getBaseUrl('/customers/me'));
         expect.fail('Expected authentication error');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(401);
+        expect(error.response.status).to.equal(401);
       }
 
       // Restore token for cleanup

@@ -41,21 +41,23 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       // Wait for the product to be fully indexed
       await delay(2000);
-      
+
       const productData = ProductDataGenerator.generateSimpleProduct({
         sku: createdProduct.sku,
       });
 
       let duplicateCreated = false;
       try {
-        const duplicateProduct = await apiClient.post<Product>(getAdminUrl('/products'), { product: productData });
+        const duplicateProduct = await apiClient.post<Product>(getAdminUrl('/products'), {
+          product: productData,
+        });
         duplicateCreated = true;
-        // If we get here, Magento allowed duplicate SKU - try to clean up
+        // If we get here, Magento allowed duplicate SKU - try to clean up by ID
         try {
-          await apiClient.delete(getAdminUrl(`/products/${encodeURIComponent(duplicateProduct.sku)}`));
+          await apiClient.delete(getAdminUrl(`/products/${duplicateProduct.id}`));
         } catch (cleanupError) {
           // Ignore cleanup errors
         }
@@ -66,14 +68,15 @@ describe('Product API Tests', function () {
         }
         // Accept either 400 or 422 for validation errors
         expect(error.response.status).to.be.oneOf([400, 422]);
-        const errorMessage = error.response.data?.message || error.response.data?.error || '';
-        expect(errorMessage.toLowerCase()).to.satisfy((msg: string) => 
-          msg.includes('already exists') || 
-          msg.includes('duplicate') || 
-          msg.includes('unique')
+        const errorMessage = (error.response.data?.message ||
+          error.response.data?.error ||
+          '') as string;
+        expect(errorMessage.toLowerCase()).to.satisfy(
+          (msg: string) =>
+            msg.includes('already exists') || msg.includes('duplicate') || msg.includes('unique'),
         );
       }
-      
+
       if (duplicateCreated) {
         // Some Magento configurations might allow duplicate SKUs in different contexts
         console.warn('WARNING: Magento allowed duplicate SKU creation');
@@ -115,7 +118,7 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       const response = await apiClient.get<Product>(
         getAdminUrl(`/products/${encodeURIComponent(createdProduct.sku)}`),
       );
@@ -131,7 +134,7 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       const searchCriteria = {
         searchCriteria: {
           filter_groups: [
@@ -166,7 +169,9 @@ describe('Product API Tests', function () {
       } else {
         const foundProduct = response.items.find((p) => p.sku === createdProduct.sku);
         if (!foundProduct) {
-          console.log('Note: Created product not found in search results - indexing may be delayed');
+          console.log(
+            'Note: Created product not found in search results - indexing may be delayed',
+          );
           this.skip();
         }
       }
@@ -177,7 +182,7 @@ describe('Product API Tests', function () {
         await apiClient.get<Product>(getAdminUrl('/products/NON_EXISTENT_SKU'));
         expect.fail('Expected 404 error');
       } catch (error: any) {
-        expect((error as any).response.status).to.equal(404);
+        expect(error.response.status).to.equal(404);
       }
     });
 
@@ -205,17 +210,16 @@ describe('Product API Tests', function () {
 
   describe('Product Attributes', function () {
     it('should list product attributes', async function () {
-      const response = await apiClient.get<SearchResult<{ attribute_code: string; frontend_label: string }>>(
-        getAdminUrl('/products/attributes'),
-        {
-          params: {
-            searchCriteria: {
-              page_size: 10,
-              current_page: 1,
-            },
+      const response = await apiClient.get<
+        SearchResult<{ attribute_code: string; frontend_label: string }>
+      >(getAdminUrl('/products/attributes'), {
+        params: {
+          searchCriteria: {
+            page_size: 10,
+            current_page: 1,
           },
         },
-      );
+      });
 
       expect(response.items).to.be.an('array');
       expect(response.items.length).to.be.greaterThan(0);
@@ -228,10 +232,13 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       const newPrice = 99.99;
       const updateData = {
         product: {
+          sku: createdProduct.sku,
+          name: createdProduct.name,
+          attribute_set_id: createdProduct.attribute_set_id,
           price: newPrice,
         },
       };
@@ -248,9 +255,12 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       const updateData = {
         product: {
+          sku: createdProduct.sku,
+          name: createdProduct.name,
+          attribute_set_id: createdProduct.attribute_set_id,
           extension_attributes: {
             stock_item: {
               qty: 50,
@@ -273,9 +283,12 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       const updateData = {
         product: {
+          sku: createdProduct.sku,
+          name: createdProduct.name,
+          attribute_set_id: createdProduct.attribute_set_id,
           status: 2, // Disabled
         },
       };
@@ -294,12 +307,14 @@ describe('Product API Tests', function () {
       if (!createdProduct) {
         this.skip();
       }
-      
+
       if (!config.test.cleanupTestData) {
-        console.log(`Skipping deletion test - cleanup disabled. Product preserved: ${createdProduct.sku}`);
+        console.log(
+          `Skipping deletion test - cleanup disabled. Product preserved: ${createdProduct.sku}`,
+        );
         this.skip();
       }
-      
+
       try {
         const response = await apiClient.delete<boolean>(
           getAdminUrl(`/products/${encodeURIComponent(createdProduct.sku)}`),
@@ -321,7 +336,8 @@ describe('Product API Tests', function () {
           return;
         }
         // For other errors, check if the error message indicates the product can't be removed
-        if (error.response?.data?.message?.includes("product couldn't be removed")) {
+        const errorMsg = (error.response?.data?.message || '') as string;
+        if (errorMsg.includes("product couldn't be removed")) {
           // Mark the product as deleted for the test
           createdProduct = undefined as any;
           this.skip();
@@ -334,10 +350,10 @@ describe('Product API Tests', function () {
       if (!createdProduct || !config.test.cleanupTestData) {
         this.skip();
       }
-      
+
       // Give Magento time to process the deletion
       await delay(1000);
-      
+
       try {
         await apiClient.get<Product>(
           getAdminUrl(`/products/${encodeURIComponent(createdProduct.sku)}`),
@@ -367,10 +383,13 @@ describe('Product API Tests', function () {
 
     after(async function () {
       if (!config.test.cleanupTestData) {
-        console.log(`Cleanup disabled. Batch products preserved:`, batchProducts.map(p => p.sku).join(', '));
+        console.log(
+          `Cleanup disabled. Batch products preserved:`,
+          batchProducts.map((p) => p.sku).join(', '),
+        );
         return;
       }
-      
+
       // Clean up batch products
       for (const product of batchProducts) {
         try {

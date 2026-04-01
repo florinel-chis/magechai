@@ -72,7 +72,7 @@ describe('Cart Operations', function () {
       );
       cartItemId = cartItem.item_id;
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '';
+      const errorMessage = (error.response?.data?.message || '') as string;
       if (
         errorMessage.includes('setFinalPrice()') ||
         errorMessage.includes('module-cart-limitations')
@@ -131,10 +131,14 @@ describe('Cart Operations', function () {
 
     it('should get current coupon (none applied)', async function () {
       try {
-        const response = await customerApiClient.get<string>(getBaseUrl('/carts/mine/coupons'));
+        const response = await customerApiClient.get<string | string[]>(
+          getBaseUrl('/carts/mine/coupons'),
+        );
 
-        // When no coupon is applied, Magento returns an empty string
-        expect(response).to.be.a('string');
+        // When no coupon is applied, Magento returns an empty string or empty array
+        expect(response).to.satisfy(
+          (r: string | string[]) => typeof r === 'string' || Array.isArray(r),
+        );
       } catch (error: any) {
         // Some Magento versions return 404 when no coupon is applied
         if (error.response?.status === 404) {

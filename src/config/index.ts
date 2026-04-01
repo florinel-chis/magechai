@@ -8,6 +8,7 @@ export const config = {
     storeCode: process.env.MAGENTO_STORE_CODE || process.env.STORE_CODE || 'default',
     adminUsername: process.env.MAGENTO_ADMIN_USERNAME || 'admin',
     adminPassword: process.env.MAGENTO_ADMIN_PASSWORD || 'admin123',
+    integrationToken: process.env.MAGENTO_INTEGRATION_TOKEN,
   },
   test: {
     timeout: parseInt(process.env.TEST_TIMEOUT || '10000', 10),
