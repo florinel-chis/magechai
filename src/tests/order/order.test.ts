@@ -83,11 +83,11 @@ describe('Order Placement Flow', function () {
 
     // Wait longer for product to be fully indexed and available
     await delay(5000);
-    
+
     // Verify product is available
     try {
       const verifyProduct = await adminApiClient.get<Product>(
-        getAdminUrl(`/products/${encodeURIComponent(testProduct.sku)}`)
+        getAdminUrl(`/products/${encodeURIComponent(testProduct.sku)}`),
       );
       console.log('Product verified as available:', verifyProduct.sku);
     } catch (error) {
@@ -118,11 +118,11 @@ describe('Order Placement Flow', function () {
     it('should add product to cart', async function () {
       // Wait for product to be fully indexed and available
       await delay(3000);
-      
+
       try {
         // Skip product verification via customer API due to permission restrictions
         // We know the product exists because we created it with admin API
-        
+
         // Try different cart item formats
         let response;
         try {
@@ -131,7 +131,7 @@ describe('Order Placement Flow', function () {
             cartItem: {
               sku: testProduct.sku,
               qty: 2,
-            }
+            },
           };
           response = await customerApiClient.post<CartItemResponse>(
             getBaseUrl('/carts/mine/items'),
@@ -145,7 +145,7 @@ describe('Order Placement Flow', function () {
               sku: testProduct.sku,
               qty: 2,
               quote_id: cartId.toString(),
-            }
+            },
           };
           response = await customerApiClient.post<CartItemResponse>(
             getBaseUrl('/carts/mine/items'),
@@ -159,9 +159,14 @@ describe('Order Placement Flow', function () {
         expect(response.price).to.equal(testProduct.price);
       } catch (error: any) {
         // Check if this is a cart limitations module error
-        const errorMessage = error.response?.data?.message || '';
-        if (errorMessage.includes('setFinalPrice()') || errorMessage.includes('module-cart-limitations')) {
-          console.error('Cart Limitations module preventing cart operations. This appears to be a vendor module-specific issue.');
+        const errorMessage = (error.response?.data?.message || '') as string;
+        if (
+          errorMessage.includes('setFinalPrice()') ||
+          errorMessage.includes('module-cart-limitations')
+        ) {
+          console.error(
+            'Cart Limitations module preventing cart operations. This appears to be a vendor module-specific issue.',
+          );
           console.error('Error details:', errorMessage);
           console.log('Skipping cart-dependent tests due to vendor module constraints.');
           this.skip();
@@ -188,11 +193,11 @@ describe('Order Placement Flow', function () {
       const cartItems = await customerApiClient.get<CartItemResponse[]>(
         getBaseUrl('/carts/mine/items'),
       );
-      
+
       if (!cartItems || cartItems.length === 0) {
         this.skip();
       }
-      
+
       const itemId = cartItems[0]!.item_id;
 
       const updatedItem = {
@@ -363,14 +368,14 @@ describe('Order Placement Flow', function () {
 
     it('should add product to guest cart', async function () {
       const guestApiClient = new ApiClient();
-      
+
       try {
         // Guest cart doesn't need quote_id in the item
         const cartItem = {
           cartItem: {
             sku: testProduct.sku,
             qty: 1,
-          }
+          },
         };
 
         const response = await guestApiClient.post<CartItemResponse>(
@@ -380,9 +385,12 @@ describe('Order Placement Flow', function () {
 
         expect(response.sku).to.equal(testProduct.sku);
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || '';
+        const errorMessage = (error.response?.data?.message || '') as string;
         // Check for specific error conditions
-        if (errorMessage.includes('setFinalPrice()') || errorMessage.includes('module-cart-limitations')) {
+        if (
+          errorMessage.includes('setFinalPrice()') ||
+          errorMessage.includes('module-cart-limitations')
+        ) {
           console.log('Cart Limitations module preventing guest cart operations.');
           this.skip();
         } else if (errorMessage.includes('Guest checkout is disabled')) {
@@ -452,10 +460,12 @@ describe('Order Placement Flow', function () {
 
         expect(guestOrderId).to.be.a('string');
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || '';
-        if (errorMessage.includes('Guest checkout is disabled') || 
-            errorMessage.includes('not allowed') ||
-            errorMessage.includes('guest')) {
+        const errorMessage = (error.response?.data?.message || '') as string;
+        if (
+          errorMessage.includes('Guest checkout is disabled') ||
+          errorMessage.includes('not allowed') ||
+          errorMessage.includes('guest')
+        ) {
           console.log('Guest checkout is not allowed on this Magento instance.');
           this.skip();
         } else {

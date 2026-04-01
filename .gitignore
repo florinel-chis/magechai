@@ -5,6 +5,7 @@ coverage/
 .env
 .env.local
 *.log
+AGENTS.md
 .DS_Store
 .idea/
 .vscode/

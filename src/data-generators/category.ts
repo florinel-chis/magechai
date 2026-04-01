@@ -37,7 +37,10 @@ export class CategoryDataGenerator {
   /**
    * Generate a subcategory with a specific parent
    */
-  static generateSubcategory(parentId: number, overrides: Partial<Category> = {}): Partial<Category> {
+  static generateSubcategory(
+    parentId: number,
+    overrides: Partial<Category> = {},
+  ): Partial<Category> {
     return this.generateCategory({
       parent_id: parentId,
       level: 3,

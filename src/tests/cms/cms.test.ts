@@ -264,13 +264,13 @@ describe('CMS API Tests', function () {
         }
 
         if (!config.test.cleanupTestData) {
-          console.log(`Skipping deletion test - cleanup disabled. Page preserved: ${createdPage.id}`);
+          console.log(
+            `Skipping deletion test - cleanup disabled. Page preserved: ${createdPage.id}`,
+          );
           this.skip();
         }
 
-        const response = await apiClient.delete<boolean>(
-          getAdminUrl(`/cmsPage/${createdPage.id}`),
-        );
+        const response = await apiClient.delete<boolean>(getAdminUrl(`/cmsPage/${createdPage.id}`));
 
         expect(response).to.be.true;
       });
@@ -470,7 +470,9 @@ describe('CMS API Tests', function () {
         }
 
         if (!config.test.cleanupTestData) {
-          console.log(`Skipping deletion test - cleanup disabled. Block preserved: ${createdBlock.id}`);
+          console.log(
+            `Skipping deletion test - cleanup disabled. Block preserved: ${createdBlock.id}`,
+          );
           this.skip();
         }
 

@@ -11,8 +11,11 @@ export class CmsDataGenerator {
 
     return {
       title,
-      identifier: overrides.identifier || `page-${faker.string.alphanumeric(8)}-${timestamp}`,
-      content: overrides.content || `
+      identifier:
+        overrides.identifier || `page-${faker.string.alphanumeric(8).toLowerCase()}-${timestamp}`,
+      content:
+        overrides.content ||
+        `
         <h1>${title}</h1>
         <p>${faker.lorem.paragraphs(3)}</p>
         <p>${faker.lorem.paragraphs(2)}</p>
@@ -24,7 +27,6 @@ export class CmsDataGenerator {
       meta_description: overrides.meta_description || faker.lorem.sentence(),
       content_heading: overrides.content_heading || title,
       sort_order: overrides.sort_order || 0,
-      store_id: overrides.store_id || [0], // 0 = All Store Views
       ...overrides,
     };
   }
@@ -79,15 +81,17 @@ export class CmsDataGenerator {
 
     return {
       title,
-      identifier: overrides.identifier || `block-${faker.string.alphanumeric(8)}-${timestamp}`,
-      content: overrides.content || `
+      identifier:
+        overrides.identifier || `block-${faker.string.alphanumeric(8).toLowerCase()}-${timestamp}`,
+      content:
+        overrides.content ||
+        `
         <div class="cms-block">
           <h3>${title}</h3>
           <p>${faker.lorem.paragraph()}</p>
         </div>
       `,
       active: overrides.active !== undefined ? overrides.active : true,
-      store_id: overrides.store_id || [0], // 0 = All Store Views
       ...overrides,
     };
   }
@@ -122,7 +126,10 @@ export class CmsDataGenerator {
   /**
    * Generate a CMS block for specific store view
    */
-  static generateStoreSpecificBlock(storeId: number, overrides: Partial<CmsBlock> = {}): Partial<CmsBlock> {
+  static generateStoreSpecificBlock(
+    storeId: number,
+    overrides: Partial<CmsBlock> = {},
+  ): Partial<CmsBlock> {
     return this.generateCmsBlock({
       store_id: [storeId],
       ...overrides,
