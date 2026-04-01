@@ -9,6 +9,9 @@ A comprehensive REST API testing framework for Magento 2 e-commerce platform bui
 - 📦 Product management (CRUD operations)
 - 🛒 Shopping cart and checkout flow testing
 - 📝 Order placement and verification
+- 🏷️ Promotions: sales rules, coupons, cart rules
+- 📦 Inventory: sources, stocks, source items (MSI)
+- 📄 Sales documents: invoices, shipments, credit memos
 - 🎯 TypeScript with strict type checking
 - 🚀 Modern async/await syntax
 - 📊 Detailed test reporting
@@ -100,6 +103,22 @@ URL=http://magento.local STORE_CODE=default npm test
 - Guest checkout
 - Order verification
 
+### Promotions Tests (`src/tests/promotions/`)
+- Sales rule creation and management
+- Coupon generation and updates
+- Cart rule application
+
+### Inventory Tests (`src/tests/inventory/`)
+- Inventory source CRUD
+- Stock management
+- Source-to-stock linking
+- Source item quantity tracking
+
+### Sales Tests (`src/tests/sales/`)
+- Invoice creation and retrieval
+- Shipment creation and tracking
+- Credit memo creation from invoices
+
 ## Development
 
 ```bash
@@ -128,7 +147,10 @@ magechai/
 │   └── tests/          # Test suites
 │       ├── customer/   # Customer-related tests
 │       ├── product/    # Product management tests
-│       └── order/      # Order and checkout tests
+│       ├── order/      # Order and checkout tests
+│       ├── promotions/ # Sales rules and coupon tests
+│       ├── inventory/  # MSI inventory tests
+│       └── sales/      # Invoice, shipment, credit memo tests
 ├── .env.example        # Environment variables template
 ├── .eslintrc.json      # ESLint configuration
 ├── .prettierrc.json    # Prettier configuration

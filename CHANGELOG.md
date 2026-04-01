@@ -1,5 +1,36 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Promotions API Tests** (`src/tests/promotions/coupon.test.ts`)
+  - Sales Rule CRUD (percentage, fixed, free shipping, buy-X-get-Y)
+  - Coupon CRUD with search by rule ID
+  - Cart rule listing
+- **Inventory API Tests** (`src/tests/inventory/inventory.test.ts`)
+  - Multi-Source Inventory (MSI) source management
+  - Stock creation and updates
+  - Source-to-stock linking
+  - Source item quantity management
+- **Sales API Tests** (`src/tests/sales/`)
+  - Invoice lifecycle (search, create, retrieve, comments)
+  - Shipment lifecycle (search, create, tracking)
+  - Credit memo lifecycle (search, create from invoice, comments)
+- `MAGENTO_INTEGRATION_TOKEN` environment variable support for admin auth
+
+### Changed
+- `src/index.test.ts` now imports all new test suites
+- Phone number generation updated to comply with Magento 2.4.8 validation
+- CMS data generators updated for Magento 2.4.8 compatibility (lowercase identifiers, removed `store_id`)
+- Product update payloads now include required `sku`, `name`, and `attribute_set_id`
+
+### Fixed
+- Admin authentication now falls back to integration token when username/password login fails
+- Yargs/Node 25 ESM compatibility issue resolved
+- All Prettier/ESLint errors resolved (0 errors remaining)
+- Product duplicate SKU cleanup now deletes by entity ID instead of SKU
+- Multiple Magento API response format differences handled gracefully
+
 ## [2.0.0] - 2025-01-31
 
 ### Added
