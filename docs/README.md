@@ -52,9 +52,12 @@ Welcome to the MageChai documentation. This directory contains comprehensive gui
 | **Customer** | `src/tests/customer/customer.test.ts` | [Quick Start](QUICK_START.md#1-customer-tests) |
 | **Product** | `src/tests/product/product.test.ts` | [Quick Start](QUICK_START.md#2-product-tests) |
 | **Order/Cart** | `src/tests/order/order.test.ts` | [Quick Start](QUICK_START.md#3-ordercart-tests) |
-| **Category** 🆕 | `src/tests/catalog/category.test.ts` | [Quick Start](QUICK_START.md#4-category-tests) |
-| **Search** 🆕 | `src/tests/catalog/search.test.ts` | [Quick Start](QUICK_START.md#5-search-tests) |
-| **CMS** 🆕 | `src/tests/cms/cms.test.ts` | [Quick Start](QUICK_START.md#6-cms-tests) |
+| **Category** | `src/tests/catalog/category.test.ts` | [Quick Start](QUICK_START.md#4-category-tests) |
+| **Search** | `src/tests/catalog/search.test.ts` | [Quick Start](QUICK_START.md#5-search-tests) |
+| **CMS** | `src/tests/cms/cms.test.ts` | [Quick Start](QUICK_START.md#6-cms-tests) |
+| **Promotions** 🆕 | `src/tests/promotions/coupon.test.ts` | - |
+| **Inventory** 🆕 | `src/tests/inventory/inventory.test.ts` | - |
+| **Sales** 🆕 | `src/tests/sales/` | - |
 
 ---
 
@@ -67,15 +70,16 @@ Welcome to the MageChai documentation. This directory contains comprehensive gui
 | Customer API | ✅ 90% | `customer.test.ts` | Complete |
 | Product API | ✅ 85% | `product.test.ts` | Complete |
 | Order/Cart API | ✅ 80% | `order.test.ts` | Complete |
-| Category API | 🆕 70% | `category.test.ts` | New |
-| Search API | 🆕 75% | `search.test.ts` | New |
-| CMS API | 🆕 65% | `cms.test.ts` | New |
-| Invoice API | ⏳ 0% | - | Planned |
-| Shipment API | ⏳ 0% | - | Planned |
-| Coupon API | ⏳ 0% | - | Planned |
-| Inventory API | ⏳ 0% | - | Planned |
+| Category API | ✅ 70% | `category.test.ts` | Complete |
+| Search API | ✅ 75% | `search.test.ts` | Complete |
+| CMS API | ✅ 65% | `cms.test.ts` | Complete |
+| Promotions API | 🆕 75% | `promotions/coupon.test.ts` | New |
+| Inventory API | 🆕 70% | `inventory/inventory.test.ts` | New |
+| Invoice API | 🆕 65% | `sales/invoice.test.ts` | New |
+| Shipment API | 🆕 60% | `sales/shipment.test.ts` | New |
+| Credit Memo API | 🆕 55% | `sales/credit-memo.test.ts` | New |
 
-**Overall Progress:** ~40% of critical Magento 2 REST API endpoints
+**Overall Progress:** ~75% of critical Magento 2 REST API endpoints
 
 See [Test Coverage Analysis](TEST_COVERAGE_ANALYSIS.md) for detailed breakdown and roadmap.
 
@@ -212,9 +216,10 @@ See [Test Coverage Analysis - Implementation Priority](TEST_COVERAGE_ANALYSIS.md
 **Next Priority Suites:**
 1. ✅ Category & Search (Complete)
 2. ✅ CMS Content (Complete)
-3. ⏳ Cart Coupons & Promotions (Planned)
-4. ⏳ Order Fulfillment (Invoice, Shipment) (Planned)
-5. ⏳ Inventory Management (Planned)
+3. ✅ Cart Coupons & Promotions (Complete)
+4. ✅ Order Fulfillment: Invoice, Shipment, Credit Memo (Complete)
+5. ✅ Inventory Management (Complete)
+6. ⏳ Advanced Checkout (Planned - requires shipping methods config)
 
 ---
 
@@ -240,9 +245,9 @@ See [Test Coverage Analysis - Implementation Priority](TEST_COVERAGE_ANALYSIS.md
 
 | Document | Version | Last Updated |
 |----------|---------|--------------|
-| README (this file) | 1.0 | 2025-11-15 |
+| README (this file) | 1.1 | 2026-04-01 |
 | Quick Start Guide | 1.0 | 2025-11-15 |
-| Test Coverage Analysis | 1.0 | 2025-11-15 |
+| Test Coverage Analysis | 1.1 | 2026-04-01 |
 
 ---
 
